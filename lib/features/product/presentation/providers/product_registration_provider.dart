@@ -2,26 +2,36 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/repositories/product_repository.dart';
+import '../../domain/models/create_product_request.dart';
+import '../../domain/usecases/create_product_use_case.dart';
 import 'product_provider.dart';
+
+final createProductUseCaseProvider = Provider<CreateProductUseCase>(
+      (ref) => CreateProductUseCase(
+    ref.read(productRepositoryProvider),
+  ),
+);
 
 final productRegistrationProvider = StateNotifierProvider<
     ProductRegistrationNotifier,
     ProductRegistrationState>(
       (ref) => ProductRegistrationNotifier(
-    ref.read(productRepositoryProvider),
+    ref,
+    ref.read(createProductUseCaseProvider),
   ),
 );
 
 class ProductRegistrationNotifier
     extends StateNotifier<ProductRegistrationState> {
   ProductRegistrationNotifier(
-      this._repository,
+      this._ref,
+      this._createProduct,
       ) : super(
     ProductRegistrationState.initial(),
   );
 
-  final ProductRepository _repository;
+  final Ref _ref;
+  final CreateProductUseCase _createProduct;
 
   void updateBasicInfo({
     required String productName,
@@ -35,15 +45,17 @@ class ProductRegistrationNotifier
     String? categoryId,
   }) {
     state = state.copyWith(
-      productName: productName,
-      productCode: productCode,
-      sku: sku,
-      barcode: barcode,
-      shortDescription: shortDescription,
-      description: description,
-      brand: brand,
-      model: model,
-      categoryId: categoryId,
+      productName: productName.trim(),
+      productCode: productCode.trim(),
+      sku: sku.trim(),
+      barcode: _emptyToNull(barcode),
+      shortDescription: shortDescription.trim(),
+      description: description.trim(),
+      brand: _emptyToNull(brand),
+      model: _emptyToNull(model),
+      categoryId: _emptyToNull(categoryId),
+      errorMessage: null,
+      completed: false,
     );
   }
 
@@ -57,7 +69,9 @@ class ProductRegistrationNotifier
       sellingPrice: sellingPrice,
       mrp: mrp,
       costPrice: costPrice,
-      currencyId: currencyId,
+      currencyId: _emptyToNull(currencyId),
+      errorMessage: null,
+      completed: false,
     );
   }
 
@@ -71,7 +85,9 @@ class ProductRegistrationNotifier
       stockQuantity: stockQuantity,
       minimumStock: minimumStock,
       maximumStock: maximumStock,
-      unitId: unitId,
+      unitId: _emptyToNull(unitId),
+      errorMessage: null,
+      completed: false,
     );
   }
 
@@ -86,6 +102,8 @@ class ProductRegistrationNotifier
       length: length,
       width: width,
       height: height,
+      errorMessage: null,
+      completed: false,
     );
   }
 
@@ -94,6 +112,8 @@ class ProductRegistrationNotifier
       ) {
     state = state.copyWith(
       thumbnail: image,
+      errorMessage: null,
+      completed: false,
     );
   }
 
@@ -104,16 +124,74 @@ class ProductRegistrationNotifier
     state = state.copyWith(
       isFeatured: isFeatured,
       isActive: isActive,
+      errorMessage: null,
+      completed: false,
     );
   }
 
-  Future<void> submit() async {
-    // Cloudflare R2 upload and ProductRepository.createProduct()
-    // will be connected after the media pipeline is completed.
+  Future<bool> submit({
+    required String businessId,
+  }) async {
+    final request = state.toRequest(
+      businessId: businessId,
+    );
+
+    final validationError = _createProduct.validate(request);
+
+    if (validationError != null) {
+      state = state.copyWith(
+        errorMessage: validationError,
+        completed: false,
+      );
+
+      return false;
+    }
+
+    try {
+      state = state.copyWith(
+        isSubmitting: true,
+        errorMessage: null,
+        completed: false,
+      );
+
+      final productId = await _createProduct(request);
+
+      _ref
+        ..invalidate(productsProvider)
+        ..invalidate(businessProductsProvider(businessId))
+        ..invalidate(watchProductsProvider)
+        ..invalidate(watchBusinessProductsProvider(businessId));
+
+      state = state.copyWith(
+        isSubmitting: false,
+        completed: true,
+        createdProductId: productId,
+      );
+
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        completed: false,
+        errorMessage: e.toString(),
+      );
+
+      return false;
+    }
   }
 
   void reset() {
     state = ProductRegistrationState.initial();
+  }
+
+  String? _emptyToNull(String? value) {
+    final trimmed = value?.trim();
+
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+
+    return trimmed;
   }
 }
 
@@ -152,6 +230,11 @@ class ProductRegistrationState {
 
   final File? thumbnail;
 
+  final bool isSubmitting;
+  final bool completed;
+  final String? errorMessage;
+  final String? createdProductId;
+
   const ProductRegistrationState({
     this.categoryId,
     this.productName = '',
@@ -177,10 +260,63 @@ class ProductRegistrationState {
     this.isFeatured = false,
     this.isActive = true,
     this.thumbnail,
+    this.isSubmitting = false,
+    this.completed = false,
+    this.errorMessage,
+    this.createdProductId,
   });
 
   factory ProductRegistrationState.initial() =>
       const ProductRegistrationState();
+
+  bool get isValid =>
+      productName.trim().isNotEmpty &&
+          productCode.trim().isNotEmpty &&
+          sku.trim().isNotEmpty &&
+          shortDescription.trim().isNotEmpty &&
+          description.trim().isNotEmpty &&
+          sellingPrice > 0 &&
+          mrp >= sellingPrice &&
+          costPrice >= 0 &&
+          stockQuantity >= 0 &&
+          minimumStock >= 0 &&
+          maximumStock >= minimumStock &&
+          weight >= 0 &&
+          length >= 0 &&
+          width >= 0 &&
+          height >= 0;
+
+  CreateProductRequest toRequest({
+    required String businessId,
+  }) {
+    return CreateProductRequest(
+      businessId: businessId,
+      categoryId: categoryId,
+      productName: productName,
+      productCode: productCode,
+      sku: sku,
+      barcode: barcode,
+      shortDescription: shortDescription,
+      description: description,
+      brand: brand,
+      model: model,
+      unitId: unitId,
+      currencyId: currencyId,
+      sellingPrice: sellingPrice,
+      mrp: mrp,
+      costPrice: costPrice,
+      stockQuantity: stockQuantity,
+      minimumStock: minimumStock,
+      maximumStock: maximumStock,
+      weight: weight,
+      length: length,
+      width: width,
+      height: height,
+      isFeatured: isFeatured,
+      isActive: isActive,
+      thumbnail: thumbnail,
+    );
+  }
 
   ProductRegistrationState copyWith({
     String? categoryId,
@@ -207,6 +343,10 @@ class ProductRegistrationState {
     bool? isFeatured,
     bool? isActive,
     File? thumbnail,
+    bool? isSubmitting,
+    bool? completed,
+    String? errorMessage,
+    String? createdProductId,
   }) {
     return ProductRegistrationState(
       categoryId: categoryId ?? this.categoryId,
@@ -234,6 +374,10 @@ class ProductRegistrationState {
       isFeatured: isFeatured ?? this.isFeatured,
       isActive: isActive ?? this.isActive,
       thumbnail: thumbnail ?? this.thumbnail,
+      isSubmitting: isSubmitting ?? this.isSubmitting,
+      completed: completed ?? this.completed,
+      errorMessage: errorMessage,
+      createdProductId: createdProductId ?? this.createdProductId,
     );
   }
 }
