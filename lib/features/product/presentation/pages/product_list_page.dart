@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/product_provider.dart';
+import 'add_product_page.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   final String businessId;
@@ -54,9 +55,21 @@ class _ProductListPageState
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // TODO
-          // Navigate to Add Product Page
+        onPressed: () async {
+          final created = await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(
+              builder: (_) => AddProductPage(
+                businessId: widget.businessId,
+              ),
+            ),
+          );
+
+          if (created == true) {
+            ref.invalidate(
+              businessProductsProvider(widget.businessId),
+            );
+            ref.invalidate(productsProvider);
+          }
         },
         icon: const Icon(Icons.add),
         label: const Text("Add Product"),
