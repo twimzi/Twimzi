@@ -1,0 +1,17 @@
+enum ModuleType {
+  products,
+  services,
+  offers,
+  gallery,
+  posts,
+  community,
+  faq,
+  booking,
+  enquiry,
+  catalogue,
+  menu,
+  appointment,
+  jobs,
+  events,
+  analytics,
+}

@@ -1,0 +1,16 @@
+enum BusinessType {
+  manufacturer,
+  trader,
+  wholesaler,
+  retailer,
+  exporter,
+  importer,
+  professional,
+  homeService,
+  restaurant,
+  hotel,
+  healthcare,
+  education,
+  ngo,
+  freelancer,
+}
