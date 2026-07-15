@@ -31,10 +31,13 @@ class CreateProductRequest {
   final double width;
   final double height;
 
+  /// Product Status
   final bool isFeatured;
   final bool isActive;
 
+  /// Product Images
   final File? thumbnail;
+  final List<File> galleryImages;
 
   const CreateProductRequest({
     required this.businessId,
@@ -61,6 +64,16 @@ class CreateProductRequest {
     required this.height,
     required this.isFeatured,
     required this.isActive,
+
+    /// Images
     this.thumbnail,
+    this.galleryImages = const [],
   });
+
+  bool get hasThumbnail => thumbnail != null;
+
+  bool get hasGalleryImages => galleryImages.isNotEmpty;
+
+  int get totalImages =>
+      (thumbnail != null ? 1 : 0) + galleryImages.length;
 }

@@ -1,19 +1,30 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/storage_provider.dart';
 import '../../data/models/product_model.dart';
 import '../../data/repositories/product_repository.dart';
 
 final productRepositoryProvider = Provider<ProductRepository>(
-      (ref) => ProductRepository(),
+      (ref) => ProductRepository(
+    storageRepository: ref.read(
+      storageRepositoryProvider,
+    ),
+  ),
 );
 
 final productsProvider =
-FutureProvider<List<ProductModel>>((ref) async {
-  return ref.read(productRepositoryProvider).getProducts();
-});
+FutureProvider<List<ProductModel>>(
+      (ref) async {
+    return ref
+        .read(productRepositoryProvider)
+        .getProducts();
+  },
+);
 
 final businessProductsProvider =
-FutureProvider.family<List<ProductModel>, String>(
+FutureProvider.family<
+    List<ProductModel>,
+    String>(
       (ref, businessId) async {
     return ref
         .read(productRepositoryProvider)
@@ -24,7 +35,9 @@ FutureProvider.family<List<ProductModel>, String>(
 );
 
 final productProvider =
-FutureProvider.family<ProductModel, String>(
+FutureProvider.family<
+    ProductModel,
+    String>(
       (ref, productId) async {
     return ref
         .read(productRepositoryProvider)
@@ -44,7 +57,9 @@ StreamProvider<List<ProductModel>>(
 );
 
 final watchBusinessProductsProvider =
-StreamProvider.family<List<ProductModel>, String>(
+StreamProvider.family<
+    List<ProductModel>,
+    String>(
       (ref, businessId) {
     return ref
         .read(productRepositoryProvider)
