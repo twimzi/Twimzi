@@ -254,6 +254,17 @@ galleryUrls.length +
 product.id,
 );
 }
+  Future<void> updateProduct({
+    required ProductModel product,
+    required CreateProductRequest request,
+  }) async {
+    await updateProductData(product);
+
+    await updateProductImages(
+      product: product,
+      request: request,
+    );
+  }
 Future<void> deleteProduct(
 String id,
 ) async {
@@ -363,4 +374,5 @@ row,
 .toList(),
 );
 }
+
 }

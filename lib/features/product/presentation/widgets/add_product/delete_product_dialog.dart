@@ -4,11 +4,13 @@ class DeleteProductDialog extends StatelessWidget {
   const DeleteProductDialog({
     super.key,
     required this.productName,
-    required this.onConfirm,
+    required this.onDelete,
+    this.isLoading = false,
   });
 
   final String productName;
-  final Future<void> Function() onConfirm;
+  final VoidCallback onDelete;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -21,53 +23,57 @@ class DeleteProductDialog extends StatelessWidget {
       title: const Text(
         'Delete Product',
       ),
-      content: Text(
-        'Are you sure you want to delete "$productName"?\n\n'
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Are you sure you want to delete this product?',
+          ),
+          const SizedBox(height: 12),
+          Text(
+            productName,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          const Text(
             'This action cannot be undone.',
+            style: TextStyle(
+              color: Colors.red,
+            ),
+          ),
+        ],
       ),
       actions: [
-        OutlinedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        TextButton(
+          onPressed: isLoading
+              ? null
+              : () => Navigator.pop(context),
           child: const Text(
             'Cancel',
           ),
         ),
         FilledButton.icon(
+          onPressed: isLoading ? null : onDelete,
+          icon: isLoading
+              ? const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            ),
+          )
+              : const Icon(Icons.delete),
+          label: Text(
+            isLoading
+                ? 'Deleting...'
+                : 'Delete',
+          ),
           style: FilledButton.styleFrom(
             backgroundColor: Colors.red,
           ),
-          icon: const Icon(
-            Icons.delete_outline,
-          ),
-          label: const Text(
-            'Delete',
-          ),
-          onPressed: () async {
-            Navigator.pop(context);
-            await onConfirm();
-          },
         ),
       ],
     );
-  }
-
-  static Future<bool> show(
-      BuildContext context, {
-        required String productName,
-        required Future<void> Function() onConfirm,
-      }) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (_) => DeleteProductDialog(
-        productName: productName,
-        onConfirm: () async {
-          await onConfirm();
-        },
-      ),
-    );
-
-    return result ?? false;
   }
 }

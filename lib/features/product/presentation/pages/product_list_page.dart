@@ -2,179 +2,175 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/product_provider.dart';
+import '../widgets/add_product/empty_products_view.dart';
+import '../widgets/add_product/product_card.dart';
+import '../widgets/add_product/product_search_bar.dart';
+import 'add_product_page.dart';
+import 'product_details_page.dart';
 
-class ProductListPage extends ConsumerStatefulWidget {
-  final String businessId;
-
+class ProductListPage extends ConsumerWidget {
   const ProductListPage({
     super.key,
     required this.businessId,
   });
 
-  @override
-  ConsumerState<ProductListPage> createState() =>
-      _ProductListPageState();
-}
+  final String businessId;
 
-class _ProductListPageState
-    extends ConsumerState<ProductListPage> {
-  final TextEditingController _searchController =
-  TextEditingController();
+  Future<void> _refresh(WidgetRef ref) async {
+    ref.invalidate(
+      businessProductsProvider(businessId),
+    );
 
-  bool _gridView = true;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+    await ref.read(
+      businessProductsProvider(businessId).future,
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final productsAsync = ref.watch(
-      businessProductsProvider(widget.businessId),
+  Widget build(
+      BuildContext context,
+      WidgetRef ref,
+      ) {
+    final products =
+    ref.watch(
+      businessProductsProvider(businessId),
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Products"),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _gridView
-                  ? Icons.view_list
-                  : Icons.grid_view,
-            ),
-            onPressed: () {
-              setState(() {
-                _gridView = !_gridView;
-              });
-            },
-          ),
-        ],
+        title: const Text(
+          'Products',
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // TODO
-          // Navigate to Add Product Page
-        },
+      floatingActionButton:
+      FloatingActionButton.extended(
+        heroTag: 'add_product',
         icon: const Icon(Icons.add),
-        label: const Text("Add Product"),
+        label: const Text(
+          'Add Product',
+        ),
+        onPressed: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => AddProductPage(
+                businessId: businessId,
+              ),
+            ),
+          );
+
+          if (context.mounted) {
+            await _refresh(ref);
+          }
+        },
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: "Search Products",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-            ),
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: ProductSearchBar(),
           ),
           Expanded(
-            child: productsAsync.when(
+            child: products.when(
               loading: () => const Center(
-                child: CircularProgressIndicator(),
+                child:
+                CircularProgressIndicator(),
               ),
-              error: (e, _) => Center(
-                child: Text(e.toString()),
+              error: (error, _) => Center(
+                child: Padding(
+                  padding:
+                  const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment:
+                    MainAxisAlignment
+                        .center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 56,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Text(
+                        error.toString(),
+                        textAlign:
+                        TextAlign.center,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      FilledButton.icon(
+                        onPressed: () =>
+                            _refresh(ref),
+                        icon: const Icon(
+                          Icons.refresh,
+                        ),
+                        label: const Text(
+                          'Retry',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              data: (products) {
-                if (products.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "No products found.",
+              data: (items) {
+                if (items.isEmpty) {
+                  return RefreshIndicator(
+                    onRefresh: () =>
+                        _refresh(ref),
+                    child: ListView(
+                      physics:
+                      const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(
+                          height: 250,
+                        ),
+                        EmptyProductsView(),
+                      ],
                     ),
                   );
                 }
 
-                if (_gridView) {
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: products.length,
-                    gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: .82,
+                return RefreshIndicator(
+                  onRefresh: () =>
+                      _refresh(ref),
+                  child: ListView.separated(
+                    padding:
+                    const EdgeInsets.all(16),
+                    itemCount: items.length,
+                    separatorBuilder:
+                        (_, _) =>
+                    const SizedBox(
+                      height: 12,
                     ),
-                    itemBuilder: (_, index) {
-                      final product = products[index];
+                    itemBuilder:
+                        (context, index) {
+                      final product =
+                      items[index];
 
-                      return Card(
-                        child: Padding(
-                          padding:
-                          const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade200,
-                                    borderRadius:
-                                    BorderRadius.circular(
-                                      10,
-                                    ),
+                      return ProductCard(
+                        product: product,
+                        onTap: () async {
+                          await Navigator.of(
+                              context)
+                              .push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProductDetailsPage(
+                                    productId:
+                                    product.id,
                                   ),
-                                  child: const Icon(
-                                    Icons.inventory_2,
-                                    size: 50,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                product.productName,
-                                maxLines: 2,
-                                overflow:
-                                TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "₹ ${product.sellingPrice}",
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Stock : ${product.stockQuantity}",
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+
+                          if (context.mounted) {
+                            await _refresh(ref);
+                          }
+                        },
                       );
                     },
-                  );
-                }
-
-                return ListView.separated(
-                  itemCount: products.length,
-                  separatorBuilder: (_, _) =>
-                  const Divider(height: 1),
-                  itemBuilder: (_, index) {
-                    final product = products[index];
-
-                    return ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.inventory),
-                      ),
-                      title: Text(product.productName),
-                      subtitle: Text(
-                        "₹ ${product.sellingPrice}",
-                      ),
-                      trailing: Text(
-                        "${product.stockQuantity}",
-                      ),
-                    );
-                  },
+                  ),
                 );
               },
             ),
