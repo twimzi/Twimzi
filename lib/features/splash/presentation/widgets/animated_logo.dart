@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AnimatedLogo extends StatefulWidget {
   const AnimatedLogo({
     super.key,
-    this.size = 150,
+    this.size = 170,
   });
 
   final double size;
@@ -15,7 +15,6 @@ class AnimatedLogo extends StatefulWidget {
 class _AnimatedLogoState extends State<AnimatedLogo>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
 
@@ -24,8 +23,8 @@ class _AnimatedLogoState extends State<AnimatedLogo>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
       vsync: this,
+      duration: const Duration(milliseconds: 1200),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -34,7 +33,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
     );
 
     _scaleAnimation = Tween<double>(
-      begin: 0.80,
+      begin: 0.85,
       end: 1.0,
     ).animate(
       CurvedAnimation(
@@ -61,10 +60,11 @@ class _AnimatedLogoState extends State<AnimatedLogo>
         child: Hero(
           tag: 'twimzi_logo',
           child: Image.asset(
-            'assets/logos/logo.png',
+            'assets/logos/twimzi_logo.png',
             width: widget.size,
             height: widget.size,
             fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
           ),
         ),
       ),

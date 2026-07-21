@@ -72,12 +72,36 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     if (authState.isAuthenticated && mounted) {
       context.go(AppRoutes.home);
+      return;
     }
 
     if (authState.hasError && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authState.errorMessage ?? 'Login failed'),
+          content: Text(
+            authState.errorMessage ?? 'Login failed',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _googleSignIn() async {
+    await ref.read(authProvider.notifier).signInWithGoogle();
+
+    final authState = ref.read(authProvider);
+
+    if (authState.isAuthenticated && mounted) {
+      context.go(AppRoutes.home);
+      return;
+    }
+
+    if (authState.hasError && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authState.errorMessage ?? 'Google Sign-In failed',
+          ),
         ),
       );
     }
@@ -102,8 +126,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                 const AuthHeader(
                   title: 'Welcome Back',
-                  subtitle:
-                  'Sign in to continue using Twimzi.',
+                  subtitle: 'Sign in to continue using Twimzi.',
                 ),
 
                 const SizedBox(height: 40),
@@ -131,7 +154,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     onPressed: () {
                       context.go(AppRoutes.forgotPassword);
                     },
-                    child: const Text('Forgot Password?'),
+                    child: const Text(
+                      'Forgot Password?',
+                    ),
                   ),
                 ),
 
@@ -144,6 +169,47 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onPressed: authState.isLoading
                       ? null
                       : _login,
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Divider(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                      ),
+                      child: Text(
+                        'OR',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium,
+                      ),
+                    ),
+                    const Expanded(
+                      child: Divider(),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                OutlinedButton.icon(
+                  onPressed: authState.isLoading
+                      ? null
+                      : _googleSignIn,
+                  icon: const Icon(
+                    Icons.g_mobiledata,
+                  ),
+                  label: const Text(
+                    'Continue with Google',
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
                 ),
 
                 const SizedBox(height: 24),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/profile_provider.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -99,10 +102,70 @@ class ProfilePage extends ConsumerWidget {
 
                 FilledButton.icon(
                   onPressed: () {
-                    // Edit Profile (next pack)
+                    context.push('/edit-profile');
                   },
                   icon: const Icon(Icons.edit),
                   label: const Text('Edit Profile'),
+                ),
+
+                const SizedBox(height: 16),
+
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Logout'),
+                          content: const Text(
+                            'Are you sure you want to logout?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context, false);
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(context, true);
+                              },
+                              child: const Text('Logout'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirm != true) {
+                      return;
+                    }
+
+                    await ref.read(authProvider.notifier).signOut();
+
+                    if (!context.mounted) return;
+
+                    context.go('/login');
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Logout'),
+                ),
+
+                const SizedBox(height: 16),
+
+                OutlinedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Delete Account will be added in the next update.',
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.delete_forever),
+                  label: const Text('Delete Account'),
                 ),
               ],
             ),

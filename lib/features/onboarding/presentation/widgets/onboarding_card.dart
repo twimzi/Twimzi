@@ -14,51 +14,58 @@ class OnboardingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 6,
-            child: Center(
-              child: Image.asset(
-                item.image,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) {
-                  return Icon(
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          children: [
+            const Spacer(),
+
+            Expanded(
+              flex: 6,
+              child: Hero(
+                tag: item.image,
+                child: Image.asset(
+                  item.image,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (_, _, _) => Icon(
                     Icons.image_outlined,
                     size: 140,
                     color: theme.colorScheme.primary,
-                  );
-                },
+                  ),
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 48),
 
-          Text(
-            item.title,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+            Text(
+              item.title,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                height: 1.2,
+              ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
-          Text(
-            item.subtitle,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: Colors.grey.shade700,
-              height: 1.5,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                item.subtitle,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey.shade600,
+                  height: 1.6,
+                ),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 40),
-        ],
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }

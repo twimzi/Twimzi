@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/app_router.dart';
 import '../../../../core/services/app_preferences.dart';
-import '../../../../core/widgets/feedback/loading_indicator.dart';
 import '../widgets/animated_logo.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -37,7 +36,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     if (firstLaunch) {
       context.go(AppRoutes.onboarding);
     } else {
-      // Later this will check authentication.
+      // Change this to AppRoutes.welcome after Welcome screen is added.
       context.go(AppRoutes.login);
     }
   }
@@ -45,47 +44,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Stack(
-          children: [
-            Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedLogo(size: 160),
-
-                    SizedBox(height: 30),
-
-                    Text(
-                      'Twimzi',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    SizedBox(height: 14),
-
-                    Text(
-                      'Digital Operating System\nfor Every Local Business',
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32),
+            child: AnimatedLogo(
+              size: 220,
             ),
-
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 50,
-              child: Center(
-                child: TwimziLoadingIndicator(),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

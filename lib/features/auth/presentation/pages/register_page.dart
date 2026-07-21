@@ -9,6 +9,7 @@ import '../widgets/auth_footer.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/password_field.dart';
+import '../../domain/auth_state.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -24,6 +25,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  bool _acceptTerms = false;
+  bool _acceptPrivacy = false;
 
   @override
   void dispose() {
@@ -57,8 +61,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   String? _passwordValidator(String? value) {
-    if (value == null || value.length < 6) {
-      return 'Minimum 6 characters';
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+
+    if (value.length < 8) {
+      return 'Minimum 8 characters';
     }
 
     return null;
@@ -73,21 +81,39 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (!_acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept Terms & Conditions'),
+        ),
+      );
+      return;
+    }
+
+    if (!_acceptPrivacy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept Privacy Policy'),
+        ),
+      );
       return;
     }
 
     await ref.read(authProvider.notifier).register(
+      fullName: _nameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
 
-    final state = ref.read(authProvider);
-
     if (!mounted) return;
 
-    if (state.isAuthenticated) {
-      context.go(AppRoutes.home);
+    final state = ref.read(authProvider);
+
+    if (state.status ==
+        AuthStatus.emailVerificationPending) {
+      context.go(AppRoutes.emailVerification);
       return;
     }
 
@@ -136,7 +162,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   controller: _emailController,
                   label: 'Email',
                   icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType:
+                  TextInputType.emailAddress,
                   validator: _emailValidator,
                 ),
 
@@ -150,11 +177,40 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 const SizedBox(height: 16),
 
                 PasswordField(
-                  controller: _confirmPasswordController,
+                  controller:
+                  _confirmPasswordController,
                   validator: _confirmValidator,
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+
+                CheckboxListTile(
+                  value: _acceptTerms,
+                  onChanged: (value) {
+                    setState(() {
+                      _acceptTerms = value ?? false;
+                    });
+                  },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'I accept the Terms & Conditions',
+                  ),
+                ),
+
+                CheckboxListTile(
+                  value: _acceptPrivacy,
+                  onChanged: (value) {
+                    setState(() {
+                      _acceptPrivacy = value ?? false;
+                    });
+                  },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'I accept the Privacy Policy',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
 
                 PrimaryButton(
                   text: authState.isLoading

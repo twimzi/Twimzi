@@ -29,11 +29,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (_repository.isLoggedIn) {
       final user = _repository.currentUser!;
 
-      state = AuthState.authenticated(
-        userId: user.id,
-        email: user.email ?? '',
-        displayName: user.userMetadata?['full_name'] as String?,
-      );
+      if (_repository.isEmailVerified) {
+        state = AuthState.authenticated(
+          userId: user.id,
+          email: user.email ?? '',
+          displayName: user.userMetadata?['full_name'] as String?,
+        );
+      } else {
+        state = AuthState.emailVerificationPending(
+          email: user.email ?? '',
+        );
+      }
     } else {
       state = AuthState.unauthenticated();
     }
@@ -46,11 +52,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return;
       }
 
-      state = AuthState.authenticated(
-        userId: user.id,
-        email: user.email ?? '',
-        displayName: user.userMetadata?['full_name'] as String?,
-      );
+      if (_repository.isEmailVerified) {
+        state = AuthState.authenticated(
+          userId: user.id,
+          email: user.email ?? '',
+          displayName: user.userMetadata?['full_name'] as String?,
+        );
+      } else {
+        state = AuthState.emailVerificationPending(
+          email: user.email ?? '',
+        );
+      }
     });
   }
 
@@ -65,16 +77,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
+
+      final user = _repository.currentUser;
+
+      if (user == null) {
+        state = AuthState.error('Unable to sign in.');
+        return;
+      }
+
+      if (_repository.isEmailVerified) {
+        state = AuthState.authenticated(
+          userId: user.id,
+          email: user.email ?? '',
+          displayName: user.userMetadata?['full_name'] as String?,
+        );
+      } else {
+        state = AuthState.emailVerificationPending(
+          email: user.email ?? '',
+        );
+      }
     } catch (e) {
-      state = AuthState.error(
-        e.toString(),
-      );
+      state = AuthState.error(e.toString());
     }
   }
 
   Future<void> register({
     required String email,
     required String password,
+    String? fullName,
   }) async {
     try {
       state = AuthState.loading();
@@ -82,11 +112,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _repository.register(
         email: email,
         password: password,
+        fullName: fullName,
+      );
+
+      state = AuthState.emailVerificationPending(
+        email: email,
       );
     } catch (e) {
-      state = AuthState.error(
-        e.toString(),
-      );
+      state = AuthState.error(e.toString());
     }
   }
 
@@ -104,9 +137,43 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
       );
     } catch (e) {
-      state = AuthState.error(
-        e.toString(),
+      state = AuthState.error(e.toString());
+    }
+  }
+
+  Future<void> resendVerificationEmail() async {
+    try {
+      await _repository.resendVerificationEmail();
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+
+  Future<bool> checkEmailVerification() async {
+    try {
+      final verified =
+      await _repository.checkEmailVerification();
+
+      if (!verified) {
+        return false;
+      }
+
+      final user = _repository.currentUser;
+
+      if (user == null) {
+        return false;
+      }
+
+      state = AuthState.authenticated(
+        userId: user.id,
+        email: user.email ?? '',
+        displayName: user.userMetadata?['full_name'] as String?,
       );
+
+      return true;
+    } catch (e) {
+      state = AuthState.error(e.toString());
+      return false;
     }
   }
 
@@ -115,6 +182,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _repository.signOut();
 
       state = AuthState.unauthenticated();
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+  Future<void> changePassword({
+    required String newPassword,
+  }) async {
+    try {
+      state = AuthState.loading();
+
+      await _repository.changePassword(
+        newPassword: newPassword,
+      );
+
+      final user = _repository.currentUser;
+
+      if (user == null) {
+        state = AuthState.unauthenticated();
+        return;
+      }
+
+      state = AuthState.authenticated(
+        userId: user.id,
+        email: user.email ?? '',
+        displayName:
+        user.userMetadata?['full_name'] as String?,
+      );
     } catch (e) {
       state = AuthState.error(
         e.toString(),
@@ -126,5 +220,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void dispose() {
     _subscription?.cancel();
     super.dispose();
+  }
+  Future<void> signInWithGoogle() async {
+    try {
+      state = AuthState.loading();
+
+      await _repository.signInWithGoogle();
+
+      final user = _repository.currentUser;
+
+      if (user == null) {
+        state = AuthState.error(
+          'Unable to sign in with Google.',
+        );
+        return;
+      }
+
+      state = AuthState.authenticated(
+        userId: user.id,
+        email: user.email ?? '',
+        displayName:
+        user.userMetadata?['full_name'] as String?,
+      );
+    } catch (e) {
+      state = AuthState.error(
+        e.toString(),
+      );
+    }
   }
 }

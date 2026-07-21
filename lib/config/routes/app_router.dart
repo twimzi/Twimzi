@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/pages/email_verification_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -15,6 +16,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
+  static const String emailVerification = '/email-verification';
   static const String home = '/home';
 }
 
@@ -25,44 +27,44 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.splash,
       name: 'splash',
-      builder: (context, state) {
-        return const SplashPage();
-      },
+      builder: (context, state) => const SplashPage(),
     ),
+
     GoRoute(
       path: AppRoutes.onboarding,
       name: 'onboarding',
-      builder: (context, state) {
-        return const OnboardingPage();
-      },
+      builder: (context, state) => const OnboardingPage(),
     ),
+
     GoRoute(
       path: AppRoutes.login,
       name: 'login',
-      builder: (context, state) {
-        return const LoginPage();
-      },
+      builder: (context, state) => const LoginPage(),
     ),
+
     GoRoute(
       path: AppRoutes.register,
       name: 'register',
-      builder: (context, state) {
-        return const RegisterPage();
-      },
+      builder: (context, state) => const RegisterPage(),
     ),
+
     GoRoute(
       path: AppRoutes.forgotPassword,
       name: 'forgotPassword',
-      builder: (context, state) {
-        return const ForgotPasswordPage();
-      },
+      builder: (context, state) => const ForgotPasswordPage(),
     ),
+
+    GoRoute(
+      path: AppRoutes.emailVerification,
+      name: 'emailVerification',
+      builder: (context, state) =>
+      const EmailVerificationPage(),
+    ),
+
     GoRoute(
       path: AppRoutes.home,
       name: 'home',
-      builder: (context, state) {
-        return const HomePage();
-      },
+      builder: (context, state) => const HomePage(),
     ),
   ],
 );

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1097004014699",
+    "project_id": "twimzi",
+    "storage_bucket": "twimzi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1097004014699:android:24661afc64b07157d0652e",
+        "android_client_info": {
+          "package_name": "com.twimzi.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1097004014699-rn6vpuumfvv84cbdug17ssqscoodjj2h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.twimzi.app",
+            "certificate_hash": "947379ad20ec407883a2ae574fd99e25572a5797"
+          }
+        },
+        {
+          "client_id": "1097004014699-fq94d759sok1qb04f2rfrbosgo9ekg5p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLBrDYKhPXS3jBjgSzrVlY7jKPWanAgW0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1097004014699-fq94d759sok1qb04f2rfrbosgo9ekg5p.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1097004014699-c7gtvip5rff5mt6l362ie5upo42fatu1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.twimzi.app.twimzi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
