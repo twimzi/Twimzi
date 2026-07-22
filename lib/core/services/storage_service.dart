@@ -122,6 +122,13 @@ class StorageService implements StorageRepository {
   }
 
   @override
+  String getBusinessFolder({
+    required String businessId,
+  }) {
+    return 'businesses/$businessId';
+  }
+
+  @override
   String getProductFolder({
     required String businessId,
     required String productId,
@@ -130,10 +137,11 @@ class StorageService implements StorageRepository {
   }
 
   @override
-  String getBusinessFolder({
+  String getServiceFolder({
     required String businessId,
+    required String serviceId,
   }) {
-    return 'businesses/$businessId';
+    return 'businesses/$businessId/services/$serviceId';
   }
 
   @override

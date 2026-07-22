@@ -40,6 +40,14 @@ abstract class StorageRepository {
     String? fileName,
   });
 
+  /// Generates the storage folder for a business.
+  ///
+  /// Example:
+  /// businesses/{businessId}
+  String getBusinessFolder({
+    required String businessId,
+  });
+
   /// Generates the storage folder for a product.
   ///
   /// Example:
@@ -49,12 +57,13 @@ abstract class StorageRepository {
     required String productId,
   });
 
-  /// Generates the storage folder for a business.
+  /// Generates the storage folder for a service.
   ///
   /// Example:
-  /// businesses/{businessId}
-  String getBusinessFolder({
+  /// businesses/{businessId}/services/{serviceId}
+  String getServiceFolder({
     required String businessId,
+    required String serviceId,
   });
 
   /// Deletes an entire folder and all of its files.
