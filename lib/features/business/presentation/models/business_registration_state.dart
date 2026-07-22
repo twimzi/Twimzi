@@ -8,24 +8,33 @@ class BusinessRegistrationState {
   final String businessType;
   final String category;
 
+  /// Identity
+  final String handle;
+
+  /// Location
   final String address;
   final String city;
   final String state;
   final String country;
   final String postalCode;
 
+  /// Contact
   final String phone;
   final String whatsapp;
   final String email;
   final String website;
 
+  /// Social
   final String facebook;
   final String instagram;
   final String youtube;
 
+  /// Media
   final File? logo;
   final File? coverImage;
+  final List<File> galleryImages;
 
+  /// Status
   final bool isSubmitting;
   final bool completed;
 
@@ -35,6 +44,7 @@ class BusinessRegistrationState {
     this.description = '',
     this.businessType = '',
     this.category = '',
+    this.handle = '',
     this.address = '',
     this.city = '',
     this.state = '',
@@ -49,6 +59,7 @@ class BusinessRegistrationState {
     this.youtube = '',
     this.logo,
     this.coverImage,
+    this.galleryImages = const [],
     this.isSubmitting = false,
     this.completed = false,
   });
@@ -64,8 +75,7 @@ class BusinessRegistrationState {
           state.trim().isNotEmpty &&
           country.trim().isNotEmpty;
 
-  bool get isStep3Valid =>
-      phone.trim().isNotEmpty;
+  bool get isStep3Valid => phone.trim().isNotEmpty;
 
   bool get isReadyToSubmit =>
       isStep1Valid &&
@@ -78,6 +88,7 @@ class BusinessRegistrationState {
     String? description,
     String? businessType,
     String? category,
+    String? handle,
     String? address,
     String? city,
     String? state,
@@ -92,6 +103,7 @@ class BusinessRegistrationState {
     String? youtube,
     File? logo,
     File? coverImage,
+    List<File>? galleryImages,
     bool? isSubmitting,
     bool? completed,
   }) {
@@ -101,6 +113,7 @@ class BusinessRegistrationState {
       description: description ?? this.description,
       businessType: businessType ?? this.businessType,
       category: category ?? this.category,
+      handle: handle ?? this.handle,
       address: address ?? this.address,
       city: city ?? this.city,
       state: state ?? this.state,
@@ -115,6 +128,7 @@ class BusinessRegistrationState {
       youtube: youtube ?? this.youtube,
       logo: logo ?? this.logo,
       coverImage: coverImage ?? this.coverImage,
+      galleryImages: galleryImages ?? this.galleryImages,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       completed: completed ?? this.completed,
     );

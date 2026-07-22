@@ -6,6 +6,8 @@ class BusinessModel {
   final String businessName;
   final String? legalName;
   final String? slug;
+  final String? handle;
+  final String? shareUrl;
   final String? description;
 
   final String businessType;
@@ -52,6 +54,8 @@ class BusinessModel {
     required this.businessName,
     this.legalName,
     this.slug,
+    this.handle,
+    this.shareUrl,
     this.description,
     required this.businessType,
     this.email,
@@ -80,9 +84,7 @@ class BusinessModel {
     this.deletedAt,
   });
 
-  factory BusinessModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+  factory BusinessModel.fromJson(Map<String, dynamic> json) {
     return BusinessModel(
       id: json['id'] as String,
       ownerProfileId: json['owner_profile_id'] as String,
@@ -90,6 +92,8 @@ class BusinessModel {
       businessName: json['business_name'] as String,
       legalName: json['legal_name'] as String?,
       slug: json['slug'] as String?,
+      handle: json['handle'] as String?,
+      shareUrl: json['share_url'] as String?,
       description: json['description'] as String?,
       businessType: json['business_type'] as String,
       email: json['email']?.toString(),
@@ -101,24 +105,18 @@ class BusinessModel {
       establishedYear: json['established_year'] as int?,
       gstNumber: json['gst_number'] as String?,
       panNumber: json['pan_number'] as String?,
-      verificationStatus:
-      json['verification_status'].toString(),
-      businessStatus:
-      json['business_status'].toString(),
-      averageRating:
-      (json['average_rating'] ?? 0).toDouble(),
+      verificationStatus: json['verification_status'].toString(),
+      businessStatus: json['business_status'].toString(),
+      averageRating: (json['average_rating'] ?? 0).toDouble(),
       totalReviews: json['total_reviews'] ?? 0,
       totalFollowers: json['total_followers'] ?? 0,
       totalViews: json['total_views'] ?? 0,
       isActive: json['is_active'] ?? true,
-      businessTypeId:
-      json['business_type_id'] as String?,
+      businessTypeId: json['business_type_id'] as String?,
       languageId: json['language_id'] as String?,
       currencyId: json['currency_id'] as String?,
-      createdAt:
-      DateTime.parse(json['created_at']),
-      updatedAt:
-      DateTime.parse(json['updated_at']),
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
       createdBy: json['created_by'] as String?,
       updatedBy: json['updated_by'] as String?,
       deletedAt: json['deleted_at'] == null
@@ -135,6 +133,8 @@ class BusinessModel {
       'business_name': businessName,
       'legal_name': legalName,
       'slug': slug,
+      'handle': handle,
+      'share_url': shareUrl,
       'description': description,
       'business_type': businessType,
       'email': email,
@@ -156,6 +156,11 @@ class BusinessModel {
       'business_type_id': businessTypeId,
       'language_id': languageId,
       'currency_id': currencyId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'created_by': createdBy,
+      'updated_by': updatedBy,
+      'deleted_at': deletedAt?.toIso8601String(),
     };
   }
 }

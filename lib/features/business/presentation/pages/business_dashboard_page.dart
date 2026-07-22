@@ -1,103 +1,125 @@
 import 'package:flutter/material.dart';
 
+import '../../data/models/business_identity.dart';
+import '../widgets/business_header.dart';
+import '../widgets/dashboard_modules.dart';
+import '../widgets/dashboard_quick_actions.dart';
+import '../widgets/dashboard_recent_activity.dart';
+import '../widgets/dashboard_statistics.dart';
+
 class BusinessDashboardPage extends StatelessWidget {
-  const BusinessDashboardPage({super.key});
+  const BusinessDashboardPage({
+    super.key,
+    required this.business,
+  });
+
+  final BusinessIdentity business;
 
   @override
   Widget build(BuildContext context) {
-    final items = [
-      (
-      title: 'Products',
-      icon: Icons.inventory_2_outlined,
-      ),
-      (
-      title: 'Services',
-      icon: Icons.handyman_outlined,
-      ),
-      (
-      title: 'Offers',
-      icon: Icons.local_offer_outlined,
-      ),
-      (
-      title: 'Gallery',
-      icon: Icons.photo_library_outlined,
-      ),
-      (
-      title: 'Orders',
-      icon: Icons.shopping_cart_outlined,
-      ),
-      (
-      title: 'Bookings',
-      icon: Icons.calendar_month_outlined,
-      ),
-      (
-      title: 'Community',
-      icon: Icons.groups_outlined,
-      ),
-      (
-      title: 'Analytics',
-      icon: Icons.bar_chart_outlined,
-      ),
-      (
-      title: 'Reviews',
-      icon: Icons.star_outline,
-      ),
-      (
-      title: 'Followers',
-      icon: Icons.people_outline,
-      ),
-      (
-      title: 'Settings',
-      icon: Icons.settings_outlined,
-      ),
-      (
-      title: 'Profile',
-      icon: Icons.storefront_outlined,
-      ),
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Business Dashboard'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: GridView.builder(
-          itemCount: items.length,
-          gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 14,
-            mainAxisSpacing: 14,
-            childAspectRatio: 1.15,
-          ),
-          itemBuilder: (context, index) {
-            final item = items[index];
-
-            return Card(
-              elevation: 2,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {},
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      item.icon,
-                      size: 42,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      item.title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium,
-                    ),
-                  ],
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              BusinessHeader(
+                business: business,
+                showCompletion: true,
+                onEdit: () {
+                  // TODO: Navigate to Edit Business
+                },
               ),
-            );
-          },
+
+              const SizedBox(height: 20),
+
+              const DashboardStatistics(
+                profileViews: 248,
+                products: 18,
+                services: 7,
+                followers: 96,
+              ),
+
+              const SizedBox(height: 24),
+
+              DashboardQuickActions(
+                onAddProduct: () {
+                  // TODO
+                },
+                onAddService: () {
+                  // TODO
+                },
+                onCreateOffer: () {
+                  // TODO
+                },
+                onUploadGallery: () {
+                  // TODO
+                },
+                onShareBusiness: () {
+                  // TODO
+                },
+                onViewProfile: () {
+                  // TODO
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              DashboardModules(
+                onProducts: () {},
+                onServices: () {},
+                onOffers: () {},
+                onGallery: () {},
+                onOrders: () {},
+                onBookings: () {},
+                onCommunity: () {},
+                onAnalytics: () {},
+                onReviews: () {},
+                onFollowers: () {},
+                onVerification: () {},
+                onSettings: () {},
+              ),
+
+              const SizedBox(height: 24),
+
+              DashboardRecentActivity(
+                activities: [
+                  DashboardActivity(
+                    title: 'New Product Added',
+                    description: 'Premium Rotavator Blade',
+                    icon: Icons.inventory_2_outlined,
+                    time: '5 min ago',
+                  ),
+                  DashboardActivity(
+                    title: 'New Review',
+                    description: '★★★★★ Excellent quality products.',
+                    icon: Icons.star_outline,
+                    time: '20 min ago',
+                  ),
+                  DashboardActivity(
+                    title: 'Offer Published',
+                    description: 'Summer Sale 15% OFF',
+                    icon: Icons.local_offer_outlined,
+                    time: '1 hour ago',
+                  ),
+                  DashboardActivity(
+                    title: 'New Follower',
+                    description: 'Raj Agriculture',
+                    icon: Icons.people_outline,
+                    time: '3 hours ago',
+                  ),
+                ],
+                onViewAll: () {
+                  // TODO
+                },
+              ),
+
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
       ),
     );

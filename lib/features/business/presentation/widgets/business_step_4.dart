@@ -1,20 +1,33 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class BusinessStep4 extends StatefulWidget {
+import '../providers/business_registration_provider.dart';
+
+class BusinessStep4 extends ConsumerStatefulWidget {
   const BusinessStep4({super.key});
 
   @override
-  State<BusinessStep4> createState() => _BusinessStep4State();
+  ConsumerState<BusinessStep4> createState() => _BusinessStep4State();
 }
 
-class _BusinessStep4State extends State<BusinessStep4> {
+class _BusinessStep4State extends ConsumerState<BusinessStep4> {
   final ImagePicker _picker = ImagePicker();
 
   File? _logo;
   File? _cover;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final registration = ref.read(businessRegistrationProvider);
+
+    _logo = registration.logo;
+    _cover = registration.coverImage;
+  }
 
   Future<void> _pickLogo() async {
     final image = await _picker.pickImage(
@@ -27,6 +40,8 @@ class _BusinessStep4State extends State<BusinessStep4> {
     setState(() {
       _logo = File(image.path);
     });
+
+    _saveImages();
   }
 
   Future<void> _pickCover() async {
@@ -40,6 +55,15 @@ class _BusinessStep4State extends State<BusinessStep4> {
     setState(() {
       _cover = File(image.path);
     });
+
+    _saveImages();
+  }
+
+  void _saveImages() {
+    ref.read(businessRegistrationProvider.notifier).updateImages(
+      logo: _logo,
+      coverImage: _cover,
+    );
   }
 
   Widget buildImageCard({
@@ -71,7 +95,7 @@ class _BusinessStep4State extends State<BusinessStep4> {
               Text(title),
               const SizedBox(height: 8),
               const Text(
-                "Tap to select image",
+                'Tap to select image',
               ),
             ],
           ),
@@ -86,21 +110,18 @@ class _BusinessStep4State extends State<BusinessStep4> {
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          "Branding",
+          'Branding',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-
         const SizedBox(height: 8),
-
         Text(
-          "Upload your business logo and cover image.",
+          'Upload your business logo and cover image.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-
         const SizedBox(height: 30),
 
         buildImageCard(
-          title: "Business Logo",
+          title: 'Business Logo',
           image: _logo,
           onTap: _pickLogo,
           icon: Icons.storefront,
@@ -109,13 +130,44 @@ class _BusinessStep4State extends State<BusinessStep4> {
         const SizedBox(height: 25),
 
         buildImageCard(
-          title: "Cover Image",
+          title: 'Cover Image',
           image: _cover,
           onTap: _pickCover,
           icon: Icons.photo,
         ),
 
         const SizedBox(height: 30),
+
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.storefront),
+                  title: const Text('Logo'),
+                  subtitle: Text(
+                    _logo == null
+                        ? 'Not selected'
+                        : _logo!.path.split('/').last,
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.image),
+                  title: const Text('Cover Image'),
+                  subtitle: Text(
+                    _cover == null
+                        ? 'Not selected'
+                        : _cover!.path.split('/').last,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
 
         Card(
           child: Padding(
@@ -130,7 +182,7 @@ class _BusinessStep4State extends State<BusinessStep4> {
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    "Use a square logo with a transparent background and a high-quality cover image to make your business profile look professional.",
+                    'Use a square logo with a transparent background and a high-quality cover image to make your business profile look professional.',
                   ),
                 ),
               ],

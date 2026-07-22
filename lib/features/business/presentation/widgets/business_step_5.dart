@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BusinessStep5 extends StatefulWidget {
+import '../providers/business_registration_provider.dart';
+
+class BusinessStep5 extends ConsumerStatefulWidget {
   const BusinessStep5({super.key});
 
   @override
-  State<BusinessStep5> createState() => _BusinessStep5State();
+  ConsumerState<BusinessStep5> createState() => _BusinessStep5State();
 }
 
-class _BusinessStep5State extends State<BusinessStep5> {
+class _BusinessStep5State extends ConsumerState<BusinessStep5> {
   bool _acceptTerms = false;
 
   @override
   Widget build(BuildContext context) {
+    final registration = ref.watch(businessRegistrationProvider);
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -33,40 +38,64 @@ class _BusinessStep5State extends State<BusinessStep5> {
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 ListTile(
-                  leading: Icon(Icons.store),
-                  title: Text('Business Information'),
+                  leading: const Icon(Icons.store),
+                  title: const Text('Business Information'),
                   subtitle: Text(
-                    'Business Name, Category, Type, Description',
+                    '${registration.businessName}\n'
+                        '${registration.businessType} • ${registration.category}\n'
+                        '${registration.tagline}',
                   ),
                 ),
-                Divider(),
+
+                const Divider(),
 
                 ListTile(
-                  leading: Icon(Icons.location_on),
-                  title: Text('Location'),
+                  leading: const Icon(Icons.location_on),
+                  title: const Text('Location'),
                   subtitle: Text(
-                    'Address, City, State, Country',
+                    '${registration.address}\n'
+                        '${registration.city}, ${registration.state}\n'
+                        '${registration.country} ${registration.postalCode}',
                   ),
                 ),
-                Divider(),
+
+                const Divider(),
 
                 ListTile(
-                  leading: Icon(Icons.phone),
-                  title: Text('Contact'),
+                  leading: const Icon(Icons.phone),
+                  title: const Text('Contact'),
                   subtitle: Text(
-                    'Phone, WhatsApp, Email, Website',
+                    'Phone: ${registration.phone}\n'
+                        'WhatsApp: ${registration.whatsapp}\n'
+                        'Email: ${registration.email}\n'
+                        'Website: ${registration.website}',
                   ),
                 ),
-                Divider(),
+
+                const Divider(),
 
                 ListTile(
-                  leading: Icon(Icons.image),
-                  title: Text('Branding'),
-                  subtitle: Text(
-                    'Logo & Cover Image',
+                  leading: const Icon(Icons.image),
+                  title: const Text('Branding'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        registration.logo != null
+                            ? '✓ Logo Selected'
+                            : '✗ Logo Not Selected',
+                      ),
+                      Text(
+                        registration.coverImage != null
+                            ? '✓ Cover Selected'
+                            : '✗ Cover Not Selected',
+                      ),
+                      Text(
+                        '${registration.galleryImages.length} Gallery Images',
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -78,35 +107,80 @@ class _BusinessStep5State extends State<BusinessStep5> {
 
         CheckboxListTile(
           value: _acceptTerms,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: const Text(
+            'I confirm that the information provided is accurate and I agree to the Terms & Conditions and Privacy Policy.',
+          ),
           onChanged: (value) {
             setState(() {
               _acceptTerms = value ?? false;
             });
           },
-          controlAffinity: ListTileControlAffinity.leading,
-          title: const Text(
-            'I confirm that the information provided is accurate and I agree to the Terms & Conditions and Privacy Policy.',
-          ),
         ),
 
         const SizedBox(height: 25),
 
         FilledButton.icon(
-          onPressed: _acceptTerms
-              ? () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Business registration will be connected to Supabase in the next step.',
-                ),
-              ),
-            );
-          }
-              : null,
-          icon: const Icon(Icons.check_circle),
-          label: const Text(
-            'Submit Business',
+          icon: registration.isSubmitting
+              ? const SizedBox(
+            height: 18,
+            width: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            ),
+          )
+              : const Icon(Icons.check_circle),
+          label: Text(
+            registration.isSubmitting
+                ? 'Creating Business...'
+                : 'Submit Business',
           ),
+          onPressed: !_acceptTerms || registration.isSubmitting
+              ? null
+              : () async {
+            try {
+              final businessId = await ref
+                  .read(businessRegistrationProvider.notifier)
+                  .submitBusiness();
+
+              if (!context.mounted) return;
+
+              if (businessId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Please complete all required information.',
+                    ),
+                  ),
+                );
+                return;
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Business created successfully.',
+                  ),
+                ),
+              );
+
+              ref
+                  .read(businessRegistrationProvider.notifier)
+                  .reset();
+
+              Navigator.pop(context);
+            } catch (e) {
+              if (!context.mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    e.toString(),
+                  ),
+                ),
+              );
+            }
+          },
         ),
 
         const SizedBox(height: 20),
@@ -125,7 +199,7 @@ class _BusinessStep5State extends State<BusinessStep5> {
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'After submission, your business profile will be created and available for further setup such as products, services, offers, gallery, and verification.',
+                    'After submission, your business profile will be created. You can later add products, services, gallery, offers, verification documents and additional business details.',
                   ),
                 ),
               ],
